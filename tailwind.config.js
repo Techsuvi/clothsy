@@ -4,7 +4,7 @@ module.exports = {
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
-  safelist: ["translate-x-full", "translate-x-0"], // ✅ Fixes cart drawer visibility
+  safelist: ["translate-x-full", "translate-x-0"],
   theme: {
     extend: {},
   },

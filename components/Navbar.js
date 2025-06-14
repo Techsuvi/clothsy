@@ -22,9 +22,9 @@ const Navbar = ({
   const pathname = usePathname();
 
   // Close cart on route change
-  // useEffect(() => {
-  //   setIsCartOpen(false);
-  // }, [pathname]);
+  useEffect(() => {
+    setIsCartOpen(false);
+  }, [pathname]);
 
   // Show/hide cart drawer
   useEffect(() => {
