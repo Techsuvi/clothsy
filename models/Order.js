@@ -12,4 +12,6 @@ const OrderSchema = new mongoose.Schema({
         adress: {type: string, required: true},
         amount: {type: Number,default: "Pending", required: true},
 }, {timestamps: true});
+
+mongoose.models = {}
  export default mongoose.model("Order", OrderSchema)

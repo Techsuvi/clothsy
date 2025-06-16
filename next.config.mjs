@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['m.media-amazon.com'], // ✅ removed the extra space
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'm.media-amazon.com',
+      },
+    ],
   },
 };
 

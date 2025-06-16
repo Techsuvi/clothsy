@@ -4,11 +4,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import "@/app/globals.css";
 import { useEffect, useState } from "react";
+import Head from "next/head";
+
 
 export default function MyApp({ Component, pageProps }) {
   const [cart, setCart] = useState({});
   const [subTotal, setSubTotal] = useState(0);
-  const [isCartOpen, setIsCartOpen] = useState(false); 
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
 
   const saveCart = (myCart) => {
@@ -30,7 +32,7 @@ export default function MyApp({ Component, pageProps }) {
     }
     setCart(newCart);
     saveCart(newCart);
-    setIsCartOpen(true); 
+    setIsCartOpen(true);
   };
 
   const removeFromCart = (itemCode, qty) => {
@@ -66,6 +68,11 @@ export default function MyApp({ Component, pageProps }) {
 
   return (
     <>
+      <Head>
+        <title>Clothsy – Premium Streetwear</title>
+        <meta name="description" content="Shop Tshirts, Hoodies, Mugs & more at Clothsy" />
+      </Head>
+
       <Navbar
         // key={subTotal}
         cart={cart}
@@ -76,7 +83,7 @@ export default function MyApp({ Component, pageProps }) {
         isCartOpen={isCartOpen}
         setIsCartOpen={setIsCartOpen}
       />
-      
+
       <Component
         cart={cart}
         addToCart={addToCart}
