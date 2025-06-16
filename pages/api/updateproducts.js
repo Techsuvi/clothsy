@@ -1,18 +1,22 @@
 import Product from "@/models/Product";
 import connectDb from "@/middleware/mongoose";
+import mongoose from "mongoose"; // ✅ Required for ObjectId check
 
 const handler = async (req, res) => {
   if (req.method === 'POST') {
     try {
       for (let i = 0; i < req.body.length; i++) {
-        // Validate that _id exists
-        if (!req.body[i]._id) {
-          return res.status(400).json({ error: "Missing _id in request body" });
+        const product = req.body[i];
+
+        // ✅ Validate _id format
+        if (!product._id || !mongoose.Types.ObjectId.isValid(product._id)) {
+          console.warn(`Invalid or missing _id: ${product._id}`);
+          continue; // Skip this iteration instead of breaking the loop
         }
 
-        await Product.findByIdAndUpdate(req.body[i]._id, req.body[i], {
-          new: true, // returns the updated document
-          runValidators: true, // ensures schema validations are run
+        await Product.findByIdAndUpdate(product._id, product, {
+          new: true,
+          runValidators: true,
         });
       }
 
@@ -23,6 +27,7 @@ const handler = async (req, res) => {
     }
   }
 
+  // GET method - fetch products
   else if (req.method === 'GET') {
     try {
       let products = await Product.find();
@@ -33,6 +38,7 @@ const handler = async (req, res) => {
     }
   }
 
+  // Invalid method
   else {
     return res.status(400).json({ error: "This method is not allowed" });
   }
