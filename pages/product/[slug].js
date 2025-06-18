@@ -1,8 +1,8 @@
 import { useRouter } from 'next/router';
 import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-
 import { ToastContainer, toast, Bounce } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) => {
   const router = useRouter();
@@ -76,24 +76,6 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
     }
   };
 
-  const handleBuyNow = () => {
-    // ✅ Store current cart to localStorage
-    const oldCart = localStorage.getItem("cart");
-    if (oldCart) {
-      localStorage.setItem("cart_backup", oldCart);
-    }
-
-    // ✅ Call buyNow to set temporary cart and go to checkout
-    buyNow(
-      product.slug,
-      1,
-      product.price,
-      product.title,
-      selectedSize,
-      selectedColor
-    );
-  };
-
   const availableSizes = Object.keys(sizeColorSlugMap);
   const availableColorsForSize = Object.keys(sizeColorSlugMap[selectedSize] || {});
 
@@ -109,7 +91,7 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="light"
+        theme="colored"
         transition={Bounce}
       />
 
@@ -164,7 +146,16 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
                 ₹{product.price}
               </span>
               <button
-                onClick={handleBuyNow}
+                onClick={() => {
+                  buyNow(
+                    product.slug,
+                    1,
+                    product.price,
+                    product.title,
+                    selectedSize,
+                    selectedColor
+                  );
+                }}
                 className="flex ml-8 text-white bg-blue-500 border-0 py-2 px-6 hover:bg-blue-600 rounded"
               >
                 Buy Now

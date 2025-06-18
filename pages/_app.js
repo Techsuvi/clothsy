@@ -1,19 +1,19 @@
 // pages/_app.js
-"use client";
+"use client"
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import "@/app/globals.css";
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // ✅ Toast styles
+
 
 export default function MyApp({ Component, pageProps }) {
   const [cart, setCart] = useState({});
   const [subTotal, setSubTotal] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const router = useRouter();
+  const router = useRouter()
+
 
   const saveCart = (myCart) => {
     localStorage.setItem("cart", JSON.stringify(myCart));
@@ -49,15 +49,19 @@ export default function MyApp({ Component, pageProps }) {
     saveCart(newCart);
   };
 
-  const buyNow = (itemCode, qty, price, name, size, variant) => {
-    let newCart = {
-      [itemCode]: { qty, price, name, size, variant },
-    };
 
-    setCart(newCart);
-    saveCart(newCart);
-    router.push("/checkout");
+const buyNow = (itemCode, qty, price, name, size, variant) => {
+  let newCart = {
+    [itemCode]: { qty, price, name, size, variant }
   };
+
+  setCart(newCart);
+  saveCart(newCart);
+  router.push('/checkout');
+};
+
+
+
 
   const clearCart = () => {
     setCart({});
@@ -82,24 +86,11 @@ export default function MyApp({ Component, pageProps }) {
     <>
       <Head>
         <title>Clothsy – Premium Streetwear</title>
-        <meta
-          name="description"
-          content="Shop Tshirts, Hoodies, Mugs & more at Clothsy"
-        />
+        <meta name="description" content="Shop Tshirts, Hoodies, Mugs & more at Clothsy" />
       </Head>
 
-      {/* ✅ ToastContainer mounted once globally */}
-      <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="light"
-      />
-
       <Navbar
+        // key={subTotal}
         cart={cart}
         addToCart={addToCart}
         removeFromCart={removeFromCart}
@@ -110,7 +101,7 @@ export default function MyApp({ Component, pageProps }) {
       />
 
       <Component
-        buyNow={buyNow}
+      buyNow={buyNow}
         cart={cart}
         addToCart={addToCart}
         removeFromCart={removeFromCart}
@@ -120,7 +111,6 @@ export default function MyApp({ Component, pageProps }) {
         setIsCartOpen={setIsCartOpen}
         {...pageProps}
       />
-
       <Footer />
     </>
   );

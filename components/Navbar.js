@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
 import Image from "next/image";
-import {
-  AiOutlineShoppingCart,
-  AiOutlineClear,
-  AiOutlineClose,
-} from "react-icons/ai";
-import { FaMinusCircle, FaPlusCircle } from "react-icons/fa";
-// import { toast } from "react-toastify"; // Optional: Uncomment if using
+import Link from "next/link";
+import React, { useEffect, useRef } from "react";
+import { AiOutlineShoppingCart, AiOutlineClear } from "react-icons/ai";
+import { IoMdCloseCircle } from "react-icons/io";
+import { FaCircleMinus, FaCirclePlus } from "react-icons/fa6";
+import { RiShoppingBag4Fill } from "react-icons/ri";
+import { MdAccountCircle } from "react-icons/md";
+import { usePathname } from "next/navigation";
+import { toast } from "react-toastify";
 
 const Navbar = ({
   cart,
@@ -21,118 +20,161 @@ const Navbar = ({
   isCartOpen,
   setIsCartOpen,
 }) => {
-  const router = useRouter();
+  const ref = useRef();
+  const pathname = usePathname();
 
-  const toggleCart = () => {
-    setIsCartOpen(!isCartOpen);
-  };
-
-  // Prevent body scroll when cart is open
   useEffect(() => {
-    document.body.style.overflow = isCartOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
+    setIsCartOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (ref.current) {
+      if (isCartOpen) {
+        ref.current.classList.remove("translate-x-full");
+        ref.current.classList.add("translate-x-0");
+        document.body.style.overflow = "hidden";
+      } else {
+        ref.current.classList.remove("translate-x-0");
+        ref.current.classList.add("translate-x-full");
+        document.body.style.overflow = "";
+      }
+    }
   }, [isCartOpen]);
 
+  const toggleCart = () => {
+    setIsCartOpen((prev) => !prev);
+  };
+
+  const handleAddToCart = (k, item) => {
+    addToCart(k, 1, item.price, item.name, item.size, item.variant);
+    toast.success("Item added to cart!", {
+      position: "top-right",
+      autoClose: 1500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
+
+  const handleClearCart = () => {
+    clearCart();
+    toast.info("Cart cleared!", {
+      position: "top-right",
+      autoClose: 1500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
+
   return (
-    <header className="text-gray-600 body-font shadow-md sticky top-0 bg-white z-50">
-      <div className="container mx-auto flex flex-wrap p-5 flex-row items-center justify-between">
-        <Link href="/" className="flex title-font font-medium items-center text-gray-900">
-          <Image src="/logo.png" alt="logo" width={40} height={40} className="mr-2" />
-          <span className="text-xl">Clothsy</span>
-        </Link>
+    <>
+      <div className="flex flex-col overflow-x-hidden md:flex-row md:justify-start justify-center items-center my-2 shadow-md sticky bg-white z-10 top-0">
+        <div className="logo mx-5">
+          <Link href="/">
+            <Image
+              src="/CLOTHSY.png"
+              width={110}
+              height={120}
+              alt="Clothsy Logo"
+            />
+          </Link>
+        </div>
 
-        <nav className="md:ml-auto flex flex-wrap items-center text-base justify-center gap-4">
-          <Link href="/tshirts" className="hover:text-gray-900">Tshirts</Link>
-          <Link href="/hoodies" className="hover:text-gray-900">Hoodies</Link>
-          <Link href="/mugs" className="hover:text-gray-900">Mugs</Link>
-          <Link href="/stickers" className="hover:text-gray-900">Stickers</Link>
-        </nav>
+        <div className="nav">
+          <ul className="flex items-center space-x-6 font-bold md:text-md">
+            <li><Link href="/tshirts">Tshirts</Link></li>
+            <li><Link href="/hoodies">Hoodies</Link></li>
+            <li><Link href="/stickers">Stickers</Link></li>
+            <li><Link href="/mugs">Mugs</Link></li>
+          </ul>
+        </div>
 
-        <div className="relative">
-          <button
+        <div className="cart absolute right-0 mx-5 top-4 cursor-pointer flex">
+          <Link href="/login">
+            <MdAccountCircle className="mx-3 text-3xl text-blue-500" />
+          </Link>
+          <AiOutlineShoppingCart
             onClick={toggleCart}
-            aria-label="Toggle Cart"
-            className="text-2xl text-gray-700 hover:text-black"
-          >
-            <AiOutlineShoppingCart />
-          </button>
-        </div>
-      </div>
-
-      {/* Cart Sidebar */}
-      <div
-        className={`fixed top-0 right-0 h-full w-80 bg-gray-100 p-6 shadow-2xl transform transition-transform duration-300 z-50 ${
-          isCartOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Shopping Cart</h2>
-          <button onClick={toggleCart} aria-label="Close Cart">
-            <AiOutlineClose className="text-2xl hover:text-red-500" />
-          </button>
+            className="text-3xl text-blue-500"
+          />
         </div>
 
-        <ol className="list-decimal font-semibold text-sm">
-          {Object.keys(cart).length === 0 && (
-            <p className="text-gray-600">Your cart is empty!</p>
-          )}
+        <div
+          ref={ref}
+          className="fixed top-0 right-0 h-full w-80 max-w-full transform transition-transform duration-300 translate-x-full bg-blue-100 z-50 shadow-lg flex flex-col"
+        >
+          <div className="flex justify-between items-center px-6 py-4 border-b border-gray-300">
+            <h2 className="font-bold text-xl">Items in Cart</h2>
+            <IoMdCloseCircle
+              onClick={toggleCart}
+              className="text-blue-500 text-3xl cursor-pointer"
+            />
+          </div>
 
-          {Object.keys(cart).map((k) => {
-            const item = cart[k];
-            return (
-              <li key={k} className="my-3">
-                <div className="flex justify-between items-center">
-                  <div className="w-2/3">
-                    {item.title} ({item.size}/{item.variant})
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FaMinusCircle
-                      onClick={() => removeFromCart(k, 1)}
-                      className="cursor-pointer text-blue-500"
-                      aria-label="Decrease quantity"
-                    />
-                    <span>{item.qty}</span>
-                    <FaPlusCircle
-                      onClick={() =>
-                        addToCart(k, 1, item.price, item.title, item.size, item.variant)
-                      }
-                      className="cursor-pointer text-blue-500"
-                      aria-label="Increase quantity"
-                    />
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <ol className="list-decimal font-semibold">
+              {cart && Object.keys(cart).length === 0 && (
+                <li className="list-none text-base font-semibold">Your Cart is Empty!</li>
+              )}
 
-        <div className="mt-4 font-semibold">
-          Subtotal: ₹{subTotal}
-        </div>
+              {cart &&
+                Object.keys(cart).map((k) => {
+                  const item = cart[k];
+                  if (!item || item.qty === 0) return null;
 
-        <div className="mt-4 flex gap-3">
-          <Link href="/checkout" passHref legacyBehavior>
-            <a onClick={toggleCart}>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">
+                  return (
+                    <li key={k} className="mb-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-semibold">{item.name}</div>
+                          <div className="text-sm text-gray-600">({item.size} / {item.variant})</div>
+                        </div>
+                        <div className="text-sm font-semibold text-gray-700">
+                          ₹{item.price * item.qty}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 mt-2">
+                        <FaCircleMinus
+                          onClick={() => removeFromCart(k, 1)}
+                          className="cursor-pointer text-blue-500 text-lg"
+                        />
+                        <span>{item.qty}</span>
+                        <FaCirclePlus
+                          onClick={() => handleAddToCart(k, item)}
+                          className="cursor-pointer text-blue-500 text-lg"
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+            </ol>
+          </div>
+
+          <div className="px-6 py-4 border-t border-gray-300 bg-blue-100">
+            <div className="font-bold text-lg text-right mb-2">Subtotal: ₹{subTotal}</div>
+
+            <Link href="/checkout">
+              <button className="w-full flex justify-center items-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mb-2">
+                <RiShoppingBag4Fill className="mr-2" />
                 Checkout
               </button>
-            </a>
-          </Link>
-          <button
-            onClick={() => {
-              clearCart();
-              // toast.success("Cart cleared!"); // Optional: Toast
-            }}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded w-full flex items-center justify-center gap-2"
-          >
-            <AiOutlineClear />
-            Clear
-          </button>
+            </Link>
+
+            <button
+              onClick={handleClearCart}
+              className="w-full flex justify-center items-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            >
+              <AiOutlineClear className="mr-2" />
+              Clear Cart
+            </button>
+          </div>
         </div>
       </div>
-    </header>
+    </>
   );
 };
 
