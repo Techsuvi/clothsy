@@ -87,7 +87,7 @@ const Navbar = ({
           <ul className="flex items-center space-x-6 font-bold md:text-md">
             <li><Link href="/tshirts">Tshirts</Link></li>
             <li><Link href="/hoodies">Hoodies</Link></li>
-            <li><Link href="/stickers">Stickers</Link></li>
+            {/* <li><Link href="/stickers">Stickers</Link></li> */}
             <li><Link href="/mugs">Mugs</Link></li>
           </ul>
         </div>

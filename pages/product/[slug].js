@@ -14,6 +14,8 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
   const [pin, setPin] = useState('');
   const [service, setService] = useState(null);
 
+  const hasSize = !!initialProduct.size;
+
   const sizeColorSlugMap = useMemo(() => {
     const map = {};
     for (const color in variants) {
@@ -39,7 +41,7 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
   }, [slug]);
 
   useEffect(() => {
-    if (!sizeColorSlugMap[selectedSize]) return;
+    if (!hasSize || !sizeColorSlugMap[selectedSize]) return;
 
     if (!sizeColorSlugMap[selectedSize][selectedColor]) {
       const fallbackColor = Object.keys(sizeColorSlugMap[selectedSize])[0];
@@ -51,7 +53,7 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
   }, [selectedSize]);
 
   const refreshVariant = (color, size) => {
-    const slug = sizeColorSlugMap[size][color];
+    const slug = hasSize ? sizeColorSlugMap[size][color] : variants[color];
     if (slug) {
       window.location.href = `/product/${slug}`;
     }
@@ -76,8 +78,10 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
     }
   };
 
-  const availableSizes = Object.keys(sizeColorSlugMap);
-  const availableColorsForSize = Object.keys(sizeColorSlugMap[selectedSize] || {});
+  const availableSizes = hasSize ? Object.keys(sizeColorSlugMap) : [];
+  const availableColorsForSize = hasSize
+    ? Object.keys(sizeColorSlugMap[selectedSize] || {})
+    : Object.keys(variants);
 
   return (
     <section className="text-gray-600 body-font overflow-hidden">
@@ -107,36 +111,46 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
           <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-6 lg:mt-0">
             <h2 className="text-sm title-font text-gray-500 tracking-widest">Clothsy</h2>
             <h1 className="text-gray-900 text-3xl title-font font-medium mb-1">
-              {product.title} ({selectedSize} / {selectedColor})
+              {product.title} {hasSize ? `(${selectedSize} / ${selectedColor})` : `(${selectedColor})`}
             </h1>
 
             <p className="leading-relaxed">{product.desc}</p>
 
             <div className="flex mt-6 items-center pb-5 border-b-2 border-gray-100 mb-5">
-              <div className="flex items-center">
-                <span className="mr-3">Size</span>
-                <select
-                  className="border rounded px-3 py-1"
-                  value={selectedSize}
-                  onChange={(e) => setSelectedSize(e.target.value)}
-                >
-                  {availableSizes.map((size) => (
-                    <option key={size} value={size}>{size}</option>
-                  ))}
-                </select>
-              </div>
+              {hasSize && (
+                <div className="flex items-center">
+                  <span className="mr-3">Size</span>
+                  <select
+                    className="border rounded px-3 py-1"
+                    value={selectedSize}
+                    onChange={(e) => setSelectedSize(e.target.value)}
+                  >
+                    {availableSizes.map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="flex items-center ml-6">
                 <span className="mr-3">Color</span>
                 <div className="flex space-x-2">
-                  {availableColorsForSize.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => refreshVariant(color, selectedSize)}
-                      className={`w-6 h-6 rounded-full border-2 ${color === selectedColor ? 'border-black' : 'border-gray-300'}`}
-                      style={{ backgroundColor: color }}
-                    ></button>
-                  ))}
+                  {availableColorsForSize.map((color) => {
+                    const isAvailable = hasSize
+                      ? !!sizeColorSlugMap[selectedSize]?.[color]
+                      : !!variants[color];
+
+                    return (
+                      <button
+                        key={color}
+                        onClick={() => refreshVariant(color, selectedSize)}
+                        disabled={!isAvailable}
+                        className={`w-6 h-6 rounded-full border-2 ${color === selectedColor ? 'border-black' : 'border-gray-300'} ${!isAvailable ? 'opacity-30 cursor-not-allowed' : ''}`}
+                        style={{ backgroundColor: color }}
+                        title={isAvailable ? color : 'Out of stock'}
+                      ></button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -213,8 +227,12 @@ export async function getServerSideProps(context) {
 
   const variants = {};
   allVariants.forEach((item) => {
-    if (!variants[item.color]) variants[item.color] = {};
-    variants[item.color][item.size] = item.slug;
+    if (item.size) {
+      if (!variants[item.color]) variants[item.color] = {};
+      variants[item.color][item.size] = item.slug;
+    } else {
+      variants[item.color] = item.slug;
+    }
   });
 
   return {

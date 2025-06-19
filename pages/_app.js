@@ -1,5 +1,4 @@
-// pages/_app.js
-"use client"
+"use client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import "@/app/globals.css";
@@ -7,13 +6,11 @@ import { useEffect, useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 
-
 export default function MyApp({ Component, pageProps }) {
   const [cart, setCart] = useState({});
   const [subTotal, setSubTotal] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const router = useRouter()
-
+  const router = useRouter();
 
   const saveCart = (myCart) => {
     localStorage.setItem("cart", JSON.stringify(myCart));
@@ -25,12 +22,13 @@ export default function MyApp({ Component, pageProps }) {
     setSubTotal(subt);
   };
 
-  const addToCart = (itemCode, qty, price, name, size, variant) => {
+  const addToCart = (slug, qty, price, name, size, variant) => {
+    const itemCode = `${slug}-${size}-${variant}`; // 👈 create a unique key
     let newCart = { ...cart };
     if (itemCode in newCart) {
       newCart[itemCode].qty += qty;
     } else {
-      newCart[itemCode] = { qty: qty, price, name, size, variant };
+      newCart[itemCode] = { qty, price, name, size, variant };
     }
     setCart(newCart);
     saveCart(newCart);
@@ -49,19 +47,15 @@ export default function MyApp({ Component, pageProps }) {
     saveCart(newCart);
   };
 
-
-const buyNow = (itemCode, qty, price, name, size, variant) => {
-  let newCart = {
-    [itemCode]: { qty, price, name, size, variant }
+  const buyNow = (slug, qty, price, name, size, variant) => {
+    const itemCode = `${slug}-${size}-${variant}`; // 👈 use same unique key
+    let newCart = {
+      [itemCode]: { qty, price, name, size, variant }
+    };
+    setCart(newCart);
+    saveCart(newCart);
+    router.push("/checkout");
   };
-
-  setCart(newCart);
-  saveCart(newCart);
-  router.push('/checkout');
-};
-
-
-
 
   const clearCart = () => {
     setCart({});
@@ -90,7 +84,6 @@ const buyNow = (itemCode, qty, price, name, size, variant) => {
       </Head>
 
       <Navbar
-        // key={subTotal}
         cart={cart}
         addToCart={addToCart}
         removeFromCart={removeFromCart}
@@ -101,7 +94,7 @@ const buyNow = (itemCode, qty, price, name, size, variant) => {
       />
 
       <Component
-      buyNow={buyNow}
+        buyNow={buyNow}
         cart={cart}
         addToCart={addToCart}
         removeFromCart={removeFromCart}
