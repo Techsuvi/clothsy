@@ -3,8 +3,26 @@ import { FaCircleMinus, FaCirclePlus } from "react-icons/fa6";
 import Link from 'next/link';
 import { RiShoppingBag4Fill } from "react-icons/ri";
 import { AiOutlineClear } from "react-icons/ai";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const Checkout = ({ cart, subTotal, addToCart, removeFromCart }) => {
+
+
+ const handleAddToCart = (k, item) => {
+    const slug = item.slug || k.split("-")[0]; // Prefer slug from item if available
+    addToCart(slug, 1, item.price, item.name, item.size, item.variant);
+    toast.success("Item added to cart!", {
+      position: "top-right",
+      autoClose: 1500,
+    });
+  };
+
+
+
+
+
   return (
     <div className='container px-2 sm:m-auto'>
       <h1 className='font-bold text-3xl my-8 text-center'>Checkout</h1>
@@ -106,16 +124,14 @@ const Checkout = ({ cart, subTotal, addToCart, removeFromCart }) => {
                   <div className='flex items-center justify-between mt-2'>
                     <div className='flex space-x-2 items-center'>
                       <FaCircleMinus
-                        onClick={() =>
-                          removeFromCart(k, 1, item.price, item.name, item.size, item.variant)
-                        }
+                        onClick={() => removeFromCart(k, 1)}
+                        
                         className="cursor-pointer text-blue-500 text-xl"
                       />
                       <span>{item.qty}</span>
                       <FaCirclePlus
-                        onClick={() =>
-                          addToCart(k, 1, item.price, item.name, item.size, item.variant)
-                        }
+                                                onClick={() => handleAddToCart(k, item)}
+
                         className="cursor-pointer text-blue-500 text-xl"
                       />
                     </div>
@@ -142,4 +158,4 @@ const Checkout = ({ cart, subTotal, addToCart, removeFromCart }) => {
   );
 };
 
-export default Checkout;
+export default Checkout;    

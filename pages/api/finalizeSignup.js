@@ -1,7 +1,6 @@
-// pages/api/finalizeSignup.js
-
 import connectDb from "@/middleware/mongoose";
 import User from "@/models/User";
+import bcrypt from "bcryptjs";
 
 const handler = async (req, res) => {
   if (req.method !== 'POST') {
@@ -21,8 +20,16 @@ const handler = async (req, res) => {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // Save the user
-    const user = new User({ name, email, password });
+    // Hash the password securely
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Save the user with the hashed password
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
     await user.save();
 
     return res.status(200).json({ success: true, message: 'User created successfully' });

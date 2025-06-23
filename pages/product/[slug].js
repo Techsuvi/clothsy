@@ -121,12 +121,12 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
                 <div className="flex items-center">
                   <span className="mr-3">Size</span>
                   <select
-                    className="border rounded px-3 py-1"
+                    className="border cursor-pointer rounded px-3 py-1"
                     value={selectedSize}
                     onChange={(e) => setSelectedSize(e.target.value)}
                   >
                     {availableSizes.map((size) => (
-                      <option key={size} value={size}>{size}</option>
+                      <option key={size} value={size}>{size}</option> 
                     ))}
                   </select>
                 </div>
@@ -134,7 +134,7 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
 
               <div className="flex items-center ml-6">
                 <span className="mr-3">Color</span>
-                <div className="flex space-x-2">
+                <div className="flex  space-x-2">
                   {availableColorsForSize.map((color) => {
                     const isAvailable = hasSize
                       ? !!sizeColorSlugMap[selectedSize]?.[color]
@@ -145,7 +145,7 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
                         key={color}
                         onClick={() => refreshVariant(color, selectedSize)}
                         disabled={!isAvailable}
-                        className={`w-6 h-6 rounded-full border-2 ${color === selectedColor ? 'border-black' : 'border-gray-300'} ${!isAvailable ? 'opacity-30 cursor-not-allowed' : ''}`}
+                        className={`w-6 cursor-pointer h-6 rounded-full border-2 ${color === selectedColor ? 'border-black' : 'border-gray-300'} ${!isAvailable ? 'opacity-30 cursor-not-allowed' : ''}`}
                         style={{ backgroundColor: color }}
                         title={isAvailable ? color : 'Out of stock'}
                       ></button>
@@ -170,7 +170,7 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
                     selectedColor
                   );
                 }}
-                className="flex ml-8 text-white bg-blue-500 border-0 py-2 px-6 hover:bg-blue-600 rounded"
+                className="flex ml-8 cursor-pointer text-white bg-blue-500 border-0 py-2 px-6 hover:bg-blue-600 rounded"
               >
                 Buy Now
               </button>
@@ -187,7 +187,7 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
                   setIsCartOpen(true);
                   toast.success("Item added to cart! 🛒", { autoClose: 2000 });
                 }}
-                className="flex ml-4 text-white bg-blue-600 border-0 py-2 px-6 hover:bg-blue-700 rounded"
+                className="flex ml-4 cursor-pointer text-white bg-blue-600 border-0 py-2 px-6 hover:bg-blue-700 rounded"
               >
                 Add to Cart
               </button>
@@ -203,7 +203,7 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
               />
               <button
                 onClick={checkServicability}
-                className="text-white bg-blue-500 border-0 py-2 px-6 hover:bg-blue-600 rounded"
+                className="text-white cursor-pointer bg-blue-500 border-0 py-2 px-6 hover:bg-blue-600 rounded"
               >
                 Check
               </button>

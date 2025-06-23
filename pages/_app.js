@@ -1,16 +1,39 @@
+// pages/_app.js
 "use client";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import "@/app/globals.css";
+
+import "@/app/globals.css"; // nprogress CSS
+import NProgress from "nprogress";
+import Router from "next/router";
+
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
+
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import "@/app/globals.css";
 
 export default function MyApp({ Component, pageProps }) {
   const [cart, setCart] = useState({});
   const [subTotal, setSubTotal] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const router = useRouter();
+
+  // Setup nprogress loading bar
+  useEffect(() => {
+    const handleStart = () => NProgress.start();
+    const handleStop = () => NProgress.done();
+
+    Router.events.on("routeChangeStart", handleStart);
+    Router.events.on("routeChangeComplete", handleStop);
+    Router.events.on("routeChangeError", handleStop);
+
+    return () => {
+      Router.events.off("routeChangeStart", handleStart);
+      Router.events.off("routeChangeComplete", handleStop);
+      Router.events.off("routeChangeError", handleStop);
+    };
+  }, []);
 
   const saveCart = (myCart) => {
     localStorage.setItem("cart", JSON.stringify(myCart));
@@ -22,18 +45,19 @@ export default function MyApp({ Component, pageProps }) {
     setSubTotal(subt);
   };
 
-  const addToCart = (slug, qty, price, name, size, variant) => {
-    const itemCode = `${slug}-${size}-${variant}`; // 👈 create a unique key
-    let newCart = { ...cart };
-    if (itemCode in newCart) {
-      newCart[itemCode].qty += qty;
-    } else {
-      newCart[itemCode] = { qty, price, name, size, variant };
-    }
-    setCart(newCart);
-    saveCart(newCart);
-    setIsCartOpen(true);
-  };
+ const addToCart = (slug, qty, price, name, size, variant) => {
+  const itemCode = `${slug}-${size}-${variant}`;
+  let newCart = { ...cart };
+  if (itemCode in newCart) {
+    newCart[itemCode].qty += qty;
+  } else {
+    newCart[itemCode] = { qty, price, name, size, variant, slug }; // ✅ Added slug
+  }
+  setCart(newCart);
+  saveCart(newCart);
+  setIsCartOpen(true);
+};
+
 
   const removeFromCart = (itemCode, qty) => {
     let newCart = JSON.parse(JSON.stringify(cart));
@@ -48,7 +72,7 @@ export default function MyApp({ Component, pageProps }) {
   };
 
   const buyNow = (slug, qty, price, name, size, variant) => {
-    const itemCode = `${slug}-${size}-${variant}`; // 👈 use same unique key
+    const itemCode = `${slug}-${size}-${variant}`;
     let newCart = {
       [itemCode]: { qty, price, name, size, variant }
     };
@@ -104,6 +128,7 @@ export default function MyApp({ Component, pageProps }) {
         setIsCartOpen={setIsCartOpen}
         {...pageProps}
       />
+
       <Footer />
     </>
   );
