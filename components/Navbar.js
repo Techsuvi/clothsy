@@ -117,13 +117,13 @@ const Navbar = ({
               <div className="absolute right-0 top-10 w-44 bg-white shadow-lg rounded z-50 overflow-hidden border">
                 {isLoggedIn ? (
                   <>
-                    <Link href="/myaccount">
+                    <Link href="/User/account">
                       <div className="px-4 py-2 hover:bg-gray-100">My Account</div>
                     </Link>
-                    <Link href="/orders">
+                    <Link href="/User/orders">
                       <div className="px-4 py-2 hover:bg-gray-100">Orders</div>
                     </Link>
-                    <Link href="/support">
+                    <Link href="/User/support">
                       <div className="px-4 py-2 hover:bg-gray-100">App Support</div>
                     </Link>
                     <div
@@ -134,9 +134,14 @@ const Navbar = ({
                     </div>
                   </>
                 ) : (
-                  <Link href="/login">
-                    <div className="px-4 py-2 hover:bg-gray-100">Login</div>
-                  </Link>
+                  <>
+                    <Link href="/login">
+                      <div className="px-4 py-2 hover:bg-gray-100">Login</div>
+                    </Link>
+                    <Link href="/signup">
+                      <div className="px-4 py-2 hover:bg-gray-100">signup</div>
+                    </Link>
+                  </>
                 )}
               </div>
             )}

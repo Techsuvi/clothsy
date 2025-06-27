@@ -5,38 +5,40 @@ import mongoose from "mongoose";
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
-  throw new Error("⚠️ Please define the MONGO_URI environment variable");
+  throw new Error("⚠️ Please define the MONGO_URI environment variable in .env");
 }
 
-// For getServerSideProps or similar
-export const connectDb = async () => {
-  if (mongoose.connection.readyState >= 1) return;
+let isConnected = false;
+
+// ✅ Common connection logic
+const connectDb = async () => {
+  if (isConnected || mongoose.connections[0].readyState) return;
 
   try {
-    await mongoose.connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    const db = await mongoose.connect(MONGO_URI, {
+      dbName: "Clothsy",               // optional but useful
+      serverSelectionTimeoutMS: 10000 // timeout after 10s
     });
+
+    isConnected = true;
+    console.log("✅ MongoDB connected");
   } catch (error) {
     console.error("❌ MongoDB connection error:", error);
     throw error;
   }
 };
 
-// For API routes (HOC)
+// ✅ For getServerSideProps or pages
+export { connectDb };
+
+// ✅ For API routes
 const connectDbMiddleware = (handler) => async (req, res) => {
-  if (mongoose.connection.readyState < 1) {
-    try {
-      await mongoose.connect(MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
-    } catch (error) {
-      console.error("❌ MongoDB connection error:", error);
-      return res.status(500).json({ error: "Database connection failed" });
-    }
+  try {
+    await connectDb(); // reuse same logic
+    return handler(req, res);
+  } catch (error) {
+    return res.status(500).json({ error: "MongoDB connection failed" });
   }
-  return handler(req, res);
 };
 
 export default connectDbMiddleware;

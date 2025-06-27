@@ -7,7 +7,7 @@ const Footer = () => {
         <>
 
 
-           <footer className="text-gray-300 body-font bg-[#112b58] text-sm">
+           <footer className="text-gray-300 body-font bg-[#112b58] text-sm ">
   <div className="container px-5 py-10 mx-auto">
     <div className="flex flex-wrap md:text-left text-center order-first">
       {/* About */}
@@ -85,6 +85,7 @@ const Footer = () => {
     </div>
   </div>
 </footer>
+
 
 
 

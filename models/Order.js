@@ -1,17 +1,44 @@
+import mongoose from "mongoose";
 
+const OrderSchema = new mongoose.Schema(
+  {
+    userId: { type: String, required: true },
+    email: { type: String, required: true },
 
-const mongoose = require('mongoose');
+    cart: [
+      {
+        slug: { type: String },
+        name: { type: String },
+        size: { type: String },
+        variant: { type: String },
+        price: { type: Number },
+        qty: { type: Number },
+      },
+    ],
 
-const OrderSchema = new mongoose.Schema({
-    userId: {type: string, required: true},
-    products:[
-        {
-            productId: {type: String},
-            quantity: {type: Number, default: 1}
-        }],
-        adress: {type: string, required: true},
-        amount: {type: Number,default: "Pending", required: true},
-}, {timestamps: true});
+    totalAmount: { type: Number, required: true },
+    status: { type: String, default: "Pending" },
 
-mongoose.models = {}
- export default mongoose.model("Order", OrderSchema)
+    stripeSessionId: { type: String }, // more accurate for Checkout Sessions
+
+    address: { type: String }, // storing full formatted address as a string
+
+    // Optional: in future if you want to map this
+    // shippingAddress: {
+    //   line1: String,
+    //   city: String,
+    //   state: String,
+    //   postal_code: String,
+    // },
+
+    // Optional: can be added if using Stripe Elements with billing
+    // billingDetails: {
+    //   name: String,
+    //   phone: String,
+    //   email: String,
+    // },
+  },
+  { timestamps: true }
+);
+
+export default mongoose.models.Order || mongoose.model("Order", OrderSchema);
