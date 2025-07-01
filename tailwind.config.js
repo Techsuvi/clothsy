@@ -6,7 +6,11 @@ module.exports = {
   ],
   safelist: ["translate-x-full", "translate-x-0"],
   theme: {
-    extend: {},
+    extend: {
+        animation: {
+        'ping-once': 'ping 0.75s ease-in-out 1',
+      },
+    },
   },
   plugins: [],
 };

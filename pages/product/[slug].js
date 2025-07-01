@@ -14,6 +14,10 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
   const [pin, setPin] = useState('');
   const [service, setService] = useState(null);
 
+  const [city, setCity] = useState('');
+  const [district, setDistrict] = useState('');
+  const [stateName, setStateName] = useState('');
+
   const hasSize = !!initialProduct.size;
 
   const sizeColorSlugMap = useMemo(() => {
@@ -67,13 +71,19 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
 
     const res = await fetch('/api/pincode');
     const data = await res.json();
-    const isServiceable = data.includes(parseInt(pin));
+    const pinData = data[pin];
 
-    setService(isServiceable);
-
-    if (isServiceable) {
+    if (pinData) {
+      setService(true);
+      setCity(pinData.city);
+      setDistrict(pinData.district);
+      setStateName(pinData.state);
       toast.success("Yay! We deliver to this pincode. 🚚", { autoClose: 3000 });
     } else {
+      setService(false);
+      setCity('');
+      setDistrict('');
+      setStateName('');
       toast.error("Sorry, we do not deliver to this pincode yet. ❌", { autoClose: 3000 });
     }
   };
@@ -126,7 +136,7 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
                     onChange={(e) => setSelectedSize(e.target.value)}
                   >
                     {availableSizes.map((size) => (
-                      <option key={size} value={size}>{size}</option> 
+                      <option key={size} value={size}>{size}</option>
                     ))}
                   </select>
                 </div>
@@ -134,7 +144,7 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
 
               <div className="flex items-center ml-6">
                 <span className="mr-3">Color</span>
-                <div className="flex  space-x-2">
+                <div className="flex space-x-2">
                   {availableColorsForSize.map((color) => {
                     const isAvailable = hasSize
                       ? !!sizeColorSlugMap[selectedSize]?.[color]
@@ -208,6 +218,22 @@ const Post = ({ initialProduct, variants, addToCart, setIsCartOpen, buyNow }) =>
                 Check
               </button>
             </div>
+
+            {service && (
+              <div className="mt-2 text-sm text-green-700">
+                ✅ Delivery available to <b>{city}</b>, <b>{district}</b>, <b>{stateName}</b>
+              </div>
+            )}
+            {service === false && (
+              <div className="mt-2 text-sm text-red-600">
+                ❌ We do not currently deliver to this pincode.
+              </div>
+            )}
+
+            {/* Hidden fields if you want to use in a form */}
+            <input type="hidden" name="city" value={city} />
+            <input type="hidden" name="district" value={district} />
+            <input type="hidden" name="state" value={stateName} />
           </div>
         </div>
       </div>

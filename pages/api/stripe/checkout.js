@@ -9,7 +9,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  await connectDb();
+  // Try to connect to DB
+  try {
+    await connectDb();
+  } catch (err) {
+    console.warn("⚠️ DB connection failed. Proceeding with fallback userId.");
+  }
 
   try {
     const { cart, email, address, subTotal } = req.body;
@@ -20,19 +25,18 @@ export default async function handler(req, res) {
 
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Missing or invalid token" });
-    }
+    let userId = "guest";
 
-    const token = authHeader.split(" ")[1];
-
-    let userId;
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      userId = decoded.id;
-    } catch (err) {
-      console.error("JWT verification failed:", err);
-      return res.status(401).json({ error: "Invalid token" });
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.id;
+      } catch (err) {
+        console.warn("⚠️ JWT verification failed, using guest user");
+      }
+    } else {
+      console.warn("⚠️ No token provided, using guest user");
     }
 
     // Prepare Stripe line items
@@ -43,7 +47,7 @@ export default async function handler(req, res) {
         product_data: {
           name: `${item.name} (${item.size}/${item.variant})`,
         },
-        unit_amount: Math.round(item.price * 100), // Must be an integer
+        unit_amount: Math.round(item.price * 100), // Must be integer
       },
       quantity: item.qty,
     }));
@@ -71,7 +75,7 @@ export default async function handler(req, res) {
         email,
         address,
         subTotal: subTotal.toString(),
-        cart: JSON.stringify(cart), // Needed in webhook to save order
+        cart: JSON.stringify(cart),
       },
     });
 

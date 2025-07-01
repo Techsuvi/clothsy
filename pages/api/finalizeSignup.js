@@ -1,6 +1,5 @@
 import connectDb from "@/middleware/mongoose";
 import User from "@/models/User";
-import bcrypt from "bcryptjs";
 
 const handler = async (req, res) => {
   if (req.method !== 'POST') {
@@ -9,32 +8,31 @@ const handler = async (req, res) => {
 
   const { name, email, password } = req.body;
 
+  console.log("📨 Signup request received:", { name, email });
+  console.log("🔐 Raw password before hashing:", password);
+
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Missing fields' });
   }
 
   try {
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // Hash the password securely
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Save the user with the hashed password
     const user = new User({
       name,
       email,
-      password: hashedPassword,
+      password, // ❌ don't hash here — model will do it!
     });
 
     await user.save();
 
+    console.log("✅ User created successfully:", user._id);
     return res.status(200).json({ success: true, message: 'User created successfully' });
   } catch (err) {
-    console.error('Error saving user:', err);
+    console.error('❌ Error saving user:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

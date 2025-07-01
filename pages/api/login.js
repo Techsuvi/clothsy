@@ -1,55 +1,75 @@
+// pages/api/login.js
 import connectDb from "@/middleware/mongoose";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { serialize } from "cookie"; // ✅ Corrected
+import { serialize } from "cookie";
 
 const handler = async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  await connectDb();
+
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { email, password } = req.body;
 
+  console.log("🔐 Login attempt:", { email });
+
   if (!email || !password) {
-    return res.status(400).json({ error: 'Missing credentials' });
+    return res.status(400).json({ error: "Missing credentials" });
   }
 
   try {
     const user = await User.findOne({ email });
+    console.log("🧑 User from DB:", user);
 
     if (!user) {
-      return res.status(401).json({ error: 'User not found' });
+      console.log("❌ User not found");
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    console.log("🔐 Raw password at login:", password);
+    console.log("🔐 Hashed password from DB:", user.password);
+
     const passwordMatch = await bcrypt.compare(password, user.password);
+    console.log(`🔍 Password match for ${email}:`, passwordMatch);
+
     if (!passwordMatch) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      console.log("❌ Password mismatch");
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
     if (!process.env.JWT_SECRET) {
-      console.error("JWT_SECRET not defined in environment");
-      return res.status(500).json({ error: "JWT secret is missing in server config" });
+      console.error("❌ JWT_SECRET missing in env");
+      return res.status(500).json({ error: "JWT secret missing" });
     }
 
+    // Sign the JWT
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user._id, email: user.email, role: user.role || "user" },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    // ✅ Corrected cookie setting
-    res.setHeader('Set-Cookie', serialize('token', token, {
-      httpOnly: false, // accessible to client JS
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24,
-      path: '/',
-    }));
+    // Optionally set as cookie as well
+    res.setHeader(
+      "Set-Cookie",
+      serialize("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24,
+        path: "/",
+      })
+    );
 
-    return res.status(200).json({ success: true });
+    console.log("✅ Login successful, token generated");
+
+    // Return the token in the response body
+    return res.status(200).json({ success: true, token });
   } catch (err) {
-    console.error("Login error:", err);
+    console.error("🔥 Login error:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 };

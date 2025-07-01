@@ -3,31 +3,37 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
-import { AiOutlineShoppingCart, AiOutlineClear } from "react-icons/ai";
-import { IoMdCloseCircle } from "react-icons/io";
+import {
+  AiOutlineShoppingCart,
+  AiOutlineMenu,
+  AiOutlineClose,
+  AiOutlineSearch,
+  AiOutlineHome,
+} from "react-icons/ai";
 import { FaCircleMinus, FaCirclePlus } from "react-icons/fa6";
-import { RiShoppingBag4Fill } from "react-icons/ri";
 import { MdAccountCircle } from "react-icons/md";
+import { IoMdCloseCircle } from "react-icons/io";
+import { BsMoon } from "react-icons/bs";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-const Navbar = ({
-  cart,
-  addToCart,
-  removeFromCart,
-  clearCart,
-  subTotal,
-  isCartOpen,
-  setIsCartOpen,
-}) => {
+const Navbar = ({ cart, addToCart, removeFromCart, clearCart, subTotal, isCartOpen, setIsCartOpen }) => {
   const ref = useRef();
   const pathname = usePathname();
   const router = useRouter();
+
+  // ✅ Hide on admin pages
+  const isAdminPage = pathname.startsWith("/admin");
+  if (isAdminPage) return null;
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setIsCartOpen(false);
+    setMobileMenuOpen(false);
+    setDropdownOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -45,190 +51,178 @@ const Navbar = ({
   }, [isCartOpen]);
 
   useEffect(() => {
-    const checkLogin = () => {
-      const token = localStorage.getItem("token");
-      setIsLoggedIn(!!token);
-    };
-
-    checkLogin();
-    window.addEventListener("storage", checkLogin);
-    window.addEventListener("visibilitychange", checkLogin);
-
-    return () => {
-      window.removeEventListener("storage", checkLogin);
-      window.removeEventListener("visibilitychange", checkLogin);
-    };
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+    window.addEventListener("storage", () => setIsLoggedIn(!!localStorage.getItem("token")));
   }, []);
 
-  const toggleCart = () => {
-    setIsCartOpen((prev) => !prev);
-  };
+  const toggleCart = () => setIsCartOpen((prev) => !prev);
+  const notifyDarkMode = () => toast.info("Dark mode coming soon", { position: "top-center" });
 
   const handleAddToCart = (k, item) => {
-    const slug = item.slug || k.split("-")[0]; // Prefer slug from item if available
+    const slug = item.slug || k.split("-")[0];
     addToCart(slug, 1, item.price, item.name, item.size, item.variant);
-    toast.success("Item added to cart!", {
-      position: "top-right",
-      autoClose: 1500,
-    });
+    toast.success("Added to cart!", { position: "top-right", autoClose: 1200 });
   };
 
   const handleClearCart = () => {
     clearCart();
-    toast.info("Cart cleared!", {
-      position: "top-right",
-      autoClose: 1500,
-    });
+    toast.info("Cart cleared", { position: "top-right", autoClose: 1200 });
   };
 
   const handleLogout = async () => {
     await fetch("/api/logout");
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    toast.success("Logged out successfully");
+    toast.success("Logged out");
     router.push("/login");
   };
 
+  const cartItemCount = Object.values(cart).reduce((acc, item) => acc + item.qty, 0);
+  const hideCartOnPaths = ["/checkout", "/User/account", "/User/orders", "/success"];
+  const shouldHideCart = hideCartOnPaths.includes(pathname);
+
   return (
     <>
-      <div className="flex flex-col md:flex-row md:justify-start justify-center items-center my-2 shadow-md sticky bg-white z-20 top-0">
-        <div className="logo mx-5">
+      <header className="bg-white shadow-md sticky top-0 z-20">
+        <div className="container mx-auto p-4 relative flex items-center justify-center md:justify-between">
+          {/* Mobile hamburger */}
+          <button className="absolute left-4 md:hidden" onClick={() => setMobileMenuOpen(true)}>
+            <AiOutlineMenu className="text-2xl text-blue-500" />
+          </button>
+
+          {/* Logo */}
           <Link href="/">
             <Image src="/CLOTHSY.png" width={110} height={120} alt="Clothsy Logo" />
           </Link>
-        </div>
 
-        <div className="nav">
-          <ul className="flex items-center space-x-6 font-bold md:text-md">
-            <li><Link href="/tshirts">Tshirts</Link></li>
-            <li><Link href="/hoodies">Hoodies</Link></li>
-            <li><Link href="/mugs">Mugs</Link></li>
-          </ul>
-        </div>
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center space-x-4">
+            <nav className="flex space-x-6 font-bold text-md">
+              {["Home", "Tshirts", "Hoodies", "Mugs", "Mousepads", "Caps"].map((item) => (
+                <Link key={item} href={`/${item.toLowerCase()}`} className="hover:text-blue-400">{item}</Link>
+              ))}
+            </nav>
+            <AiOutlineSearch className="text-xl text-gray-600" />
+            <BsMoon onClick={notifyDarkMode} className="text-xl text-gray-600 cursor-pointer" />
+          </div>
 
-        <div className="cart absolute right-0 mx-5 top-4 flex items-center gap-2">
-          {/* Account Icon with Dropdown */}
-          <div className="relative">
-            <MdAccountCircle
-              className="text-3xl text-blue-500 cursor-pointer"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            />
-            {dropdownOpen && (
-              <div className="absolute right-0 top-10 w-44 bg-white shadow-lg rounded z-50 overflow-hidden border">
-                {isLoggedIn ? (
-                  <>
-                    <Link href="/User/account">
-                      <div className="px-4 py-2 hover:bg-gray-100">My Account</div>
-                    </Link>
-                    <Link href="/User/orders">
-                      <div className="px-4 py-2 hover:bg-gray-100">Orders</div>
-                    </Link>
-                    <Link href="/User/support">
-                      <div className="px-4 py-2 hover:bg-gray-100">App Support</div>
-                    </Link>
-                    <div
-                      onClick={handleLogout}
-                      className="px-4 py-2 text-red-500 hover:bg-gray-100 cursor-pointer"
-                    >
-                      Logout
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/login">
-                      <div className="px-4 py-2 hover:bg-gray-100">Login</div>
-                    </Link>
-                    <Link href="/signup">
-                      <div className="px-4 py-2 hover:bg-gray-100">signup</div>
-                    </Link>
-                  </>
+          {/* Desktop right icons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <div className="relative">
+              <MdAccountCircle
+                className="text-3xl text-blue-500 cursor-pointer"
+                onClick={() => setDropdownOpen((o) => !o)}
+              />
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded border overflow-hidden z-50">
+                  {isLoggedIn ? (
+                    <>
+                      <Link href="/User/account"><div className="px-4 py-2 hover:bg-gray-100">My Account</div></Link>
+                      <Link href="/User/orders"><div className="px-4 py-2 hover:bg-gray-100">Orders</div></Link>
+                      <Link href="/User/contact"><div className="px-4 py-2 hover:bg-gray-100">Support</div></Link>
+                      <div onClick={handleLogout} className="px-4 py-2 text-red-500 hover:bg-gray-100 cursor-pointer">Logout</div>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/login"><div className="px-4 py-2 hover:bg-gray-100">Login</div></Link>
+                      <Link href="/signup"><div className="px-4 py-2 hover:bg-gray-100">Signup</div></Link>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+            {!shouldHideCart && (
+              <div className="relative cursor-pointer" onClick={toggleCart}>
+                <AiOutlineShoppingCart className="text-3xl text-blue-500" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {cartItemCount}
+                  </span>
                 )}
               </div>
             )}
           </div>
-
-          {/* Cart Icon */}
-          <AiOutlineShoppingCart
-            onClick={toggleCart}
-            className="text-3xl text-blue-500 cursor-pointer"
-          />
         </div>
 
-        {/* Slide-out Cart Drawer */}
-        <div
-          ref={ref}
-          className="fixed top-0 right-0 h-full w-80 max-w-full transform transition-transform duration-300 translate-x-full bg-blue-100 z-50 shadow-lg flex flex-col"
-        >
-          <div className="flex justify-between items-center px-6 py-4 border-b border-gray-300">
-            <h2 className="font-bold text-xl">Items in Cart</h2>
-            <IoMdCloseCircle
-              onClick={toggleCart}
-              className="text-blue-500 text-3xl cursor-pointer"
-            />
-          </div>
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <>
+            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-30" onClick={() => setMobileMenuOpen(false)} />
+            <div className="fixed top-0 left-1/2 transform -translate-x-1/2 bg-white w-[90%] max-w-sm z-40 rounded-b-xl shadow-xl animate-slide-in">
+              <div className="flex justify-between items-center px-4 py-3 border-b">
+                <Image src="/CLOTHSY.png" width={100} height={40} alt="Logo" />
+                <AiOutlineClose className="text-2xl text-blue-500" onClick={() => setMobileMenuOpen(false)} />
+              </div>
+              <nav className="flex flex-col items-center px-6 py-4 gap-4 font-semibold text-lg text-gray-700">
+                {["Home", "Tshirts", "Hoodies", "Mugs", "Mousepads", "Caps"].map((item) => (
+                  <Link key={item} href={`/${item.toLowerCase()}`} onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500">
+                    {item}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          </>
+        )}
+      </header>
 
+      {/* Mobile bottom nav */}
+      {!shouldHideCart && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-t md:hidden flex justify-around items-center py-2">
+          <Link href="/"><AiOutlineHome className="text-2xl text-blue-500" /></Link>
+          <AiOutlineSearch className="text-2xl text-gray-600" />
+          <BsMoon onClick={notifyDarkMode} className="text-2xl text-gray-600 cursor-pointer" />
+          <MdAccountCircle className="text-2xl text-blue-500 cursor-pointer" onClick={() => setDropdownOpen((o) => !o)} />
+          <div className="relative cursor-pointer" onClick={toggleCart}>
+            <AiOutlineShoppingCart className="text-2xl text-blue-500" />
+            {cartItemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                {cartItemCount}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Slide-out cart */}
+      {!shouldHideCart && (
+        <div ref={ref} className="fixed top-0 right-0 h-full w-80 transform transition-transform duration-300 translate-x-full bg-blue-100 z-50 shadow-lg flex flex-col">
+          <div className="flex justify-between items-center px-6 py-4 border-b">
+            <h2 className="font-bold text-xl">Cart</h2>
+            <IoMdCloseCircle onClick={toggleCart} className="text-blue-500 text-3xl cursor-pointer" />
+          </div>
           <div className="flex-1 overflow-y-auto px-6 py-4">
             <ol className="list-decimal font-semibold">
-              {cart && Object.keys(cart).length === 0 && (
-                <li className="list-none text-base font-semibold">Your Cart is Empty!</li>
-              )}
-
-              {cart &&
-                Object.keys(cart).map((k) => {
-                  const item = cart[k];
-                  if (!item || item.qty === 0) return null;
-
-                  return (
-                    <li key={k} className="mb-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-semibold">{item.name}</div>
-                          <div className="text-sm text-gray-600">
-                            ({item.size} / {item.variant})
-                          </div>
-                        </div>
-                        <div className="text-sm font-semibold text-gray-700">
-                          ₹{item.price * item.qty}
-                        </div>
+              {Object.keys(cart).length === 0 && <li className="list-none">Your cart is empty!</li>}
+              {Object.keys(cart).map((k) => {
+                const item = cart[k];
+                if (!item || item.qty === 0) return null;
+                return (
+                  <li key={k} className="mb-4">
+                    <div className="flex justify-between">
+                      <div>
+                        <div className="font-semibold">{item.name}</div>
+                        <div className="text-sm text-gray-600">({item.size} / {item.variant})</div>
                       </div>
-
-                      <div className="flex items-center gap-3 mt-2">
-                        <FaCircleMinus
-                          onClick={() => removeFromCart(k, 1)}
-                          className="cursor-pointer text-blue-500 text-lg"
-                        />
-                        <span>{item.qty}</span>
-                        <FaCirclePlus
-                          onClick={() => handleAddToCart(k, item)}
-                          className="cursor-pointer text-blue-500 text-lg"
-                        />
-                      </div>
-                    </li>
-                  );
-                })}
+                      <div className="font-semibold">₹{item.price * item.qty}</div>
+                    </div>
+                    <div className="flex items-center gap-3 mt-2">
+                      <FaCircleMinus onClick={() => removeFromCart(k, 1)} className="cursor-pointer text-blue-500" />
+                      <span>{item.qty}</span>
+                      <FaCirclePlus onClick={() => handleAddToCart(k, item)} className="cursor-pointer text-blue-500" />
+                    </div>
+                  </li>
+                );
+              })}
             </ol>
           </div>
-
-          <div className="px-6 py-4 border-t border-gray-300 bg-blue-100">
-            <div className="font-bold text-lg text-right mb-2">Subtotal: ₹{subTotal}</div>
-
-            <Link href="/checkout">
-              <button className="w-full cursor-pointer flex justify-center items-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mb-2">
-                <RiShoppingBag4Fill className="mr-2" />
-                Checkout
-              </button>
-            </Link>
-
-            <button
-              onClick={handleClearCart}
-              className="w-full flex cursor-pointer justify-center items-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-            >
-              <AiOutlineClear className="mr-2" />
-              Clear Cart
-            </button>
+          <div className="px-6 py-4 border-t bg-blue-100">
+            <div className="text-right font-bold mb-2">Subtotal: ₹{subTotal}</div>
+            <Link href="/checkout"><button className="w-full py-2 mb-2 rounded bg-blue-500 text-white">Checkout</button></Link>
+            <button onClick={handleClearCart} className="w-full py-2 rounded bg-blue-500 text-white">Clear Cart</button>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 };

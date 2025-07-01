@@ -1,42 +1,40 @@
+// models/Order.js
+
 import mongoose from "mongoose";
+
+const cartItemSchema = new mongoose.Schema(
+  {
+     name: { type: String, required: true },
+        slug: { type: String, required: false },    // now optional
+        size: { type: String, required: false },    // now optional
+        variant: { type: String, required: false },
+        qty: { type: Number, required: true },
+        price: { type: Number, required: true },
+  },
+  { _id: false }
+);
 
 const OrderSchema = new mongoose.Schema(
   {
     userId: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, trim: true, lowercase: true },
 
-    cart: [
-      {
-        slug: { type: String },
-        name: { type: String },
-        size: { type: String },
-        variant: { type: String },
-        price: { type: Number },
-        qty: { type: Number },
-      },
-    ],
+    cart: {
+      type: [cartItemSchema],
+      validate: [(val) => val.length > 0, "Cart cannot be empty"],
+    },
 
     totalAmount: { type: Number, required: true },
-    status: { type: String, default: "Pending" },
 
-    stripeSessionId: { type: String }, // more accurate for Checkout Sessions
+    status: {
+      type: String,
+      enum: ["Pending", "Paid", "Failed", "Cancelled"],
+      default: "Pending", // Or "Paid" if you're using finalize-order.js
+    },
 
-    address: { type: String }, // storing full formatted address as a string
+    stripeSessionId: { type: String, required: true, trim: true },
 
-    // Optional: in future if you want to map this
-    // shippingAddress: {
-    //   line1: String,
-    //   city: String,
-    //   state: String,
-    //   postal_code: String,
-    // },
-
-    // Optional: can be added if using Stripe Elements with billing
-    // billingDetails: {
-    //   name: String,
-    //   phone: String,
-    //   email: String,
-    // },
+    address: { type: String, trim: true }, // full formatted address
   },
   { timestamps: true }
 );

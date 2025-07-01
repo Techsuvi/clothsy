@@ -1,103 +1,112 @@
 import Footer from "@/components/Footer";
+import HomeSlider from "@/components/HomeSlider";
 import Navbar from "@/components/Navbar";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
   return (
-
     <>
+    
 
-
-      <div>
-        <Image src="/cover.jpg" alt="cover" width={1920} height={400} style={{
-          width: "100%",
-          height: "400px",
-          objectFit: "cover",
-          // borderRadius: "10px"
-        }} />
-
-      </div>
+      {/* Hero Cover Image */}
+      {/* <div>
+        <Image
+          src="/cover.jpg"
+          alt="cover"
+          width={1920}
+          height={400}
+          style={{
+            width: "100%",
+            height: "400px",
+            objectFit: "cover",
+          }}
+        />
+      </div> */}
+      <HomeSlider />
 
       <section className="text-gray-600 body-font">
         <div className="container px-5 py-24 mx-auto">
+
+          {/* Tagline and Intro */}
           <div className="flex flex-wrap w-full mb-20 flex-col items-center text-center">
-            <h1 className="sm:text-3xl text-2xl title-font mb-2 text-blue-500 font-bold">CLOTHSY - WEAR THE STYLE </h1>
-            <p className="lg:w-1/2 w-full leading-relaxed text-gray-500">Whatever cardigan tote bag tumblr hexagon brooklyn asymmetrical gentrify, subway tile poke farm-to-table.</p>
+            <h1 className="sm:text-3xl text-2xl title-font mb-2 font-bold text-blue-500">
+              Wear the <span className="text-blue-500">&lt;code&gt;</span>
+            </h1>
+            <p className="lg:w-1/2 w-full leading-relaxed text-gray-500">
+              Introducing Clothsy, a revolutionary e-commerce platform that delivers amazing products at unbeatable prices. Built on Next.js and MongoDB, our site offers a seamless shopping experience powered by server-side rendering.
+            </p>
           </div>
+
+          {/* Trending Section Placeholder */}
+          <div className="w-full mb-12 text-center">
+            <h2 className="text-xl text-blue-500 font-medium title-font mb-2">
+              Explore Trending Hoodies on Clothsy
+            </h2>
+            <p className="text-gray-500 leading-relaxed">
+              Loading... Hold tight.
+            </p>
+          </div>
+
+          {/* Features Cards (Why Clothsy) */}
           <div className="flex flex-wrap -m-4">
-            <div className="xl:w-1/3 md:w-1/2 p-4">
-              <div className="border border-gray-200 p-6 rounded-lg">
+            {/* Premium Tshirts */}
+            <div className="w-full md:w-1/3 p-4">
+              <div className="border border-blue-200 p-6 rounded-lg">
                 <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-500 mb-4">
+                  {/* Example icon (T-shirt icon could replace this) */}
                   <svg fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-6 h-6" viewBox="0 0 24 24">
-                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                    {/* Placeholder icon (e.g. T-shirt) */}
+                    <path d="M20 12H4l8-8 8 8z"></path>
+                    <path d="M4 12v8h16v-8"></path>
                   </svg>
                 </div>
-                <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Shooting Stars</h2>
-                <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
+                <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Premium Tshirts</h2>
+                <p className="leading-relaxed text-base">Our T-Shirts are 100% made of cotton.</p>
               </div>
             </div>
-            <div className="xl:w-1/3 md:w-1/2 p-4">
-              <div className="border border-gray-200 p-6 rounded-lg">
+
+            {/* Free Shipping */}
+            <div className="w-full md:w-1/3 p-4">
+              <div className="border border-blue-200 p-6 rounded-lg">
                 <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-500 mb-4">
+                  {/* Example icon (Truck) */}
                   <svg fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-6 h-6" viewBox="0 0 24 24">
-                    <circle cx="6" cy="6" r="3"></circle>
-                    <circle cx="6" cy="18" r="3"></circle>
-                    <path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"></path>
+                    {/* Truck icon path */}
+                    <path d="M3 13h14v-4H3v4z"></path>
+                    <path d="M14 13l4-4"></path>
+                    <path d="M14 13l4 4"></path>
+                    <path d="M3 17h14v-4H3v4z"></path>
                   </svg>
                 </div>
-                <h2 className="text-lg text-gray-900 font-medium title-font mb-2">The Catalyzer</h2>
-                <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
+                <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Free Shipping</h2>
+                <p className="leading-relaxed text-base">We ship all over India for FREE.</p>
               </div>
             </div>
-            <div className="xl:w-1/3 md:w-1/2 p-4">
-              <div className="border border-gray-200 p-6 rounded-lg">
+
+            {/* Exciting Offers */}
+            <div className="w-full md:w-1/3 p-4">
+              <div className="border border-blue-200 p-6 rounded-lg">
                 <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-500 mb-4">
+                  {/* Example icon (Sparkles) */}
                   <svg fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-6 h-6" viewBox="0 0 24 24">
-                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
+                    {/* Sparkles icon paths */}
+                    <path d="M5 15l5 5"></path>
+                    <path d="M5 15l-5-5"></path>
+                    <path d="M15 5l5-5"></path>
+                    <path d="M15 5l-5 5"></path>
                   </svg>
                 </div>
-                <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Neptune</h2>
-                <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
-              </div>
-            </div>
-            <div className="xl:w-1/3 md:w-1/2 p-4">
-              <div className="border border-gray-200 p-6 rounded-lg">
-                <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-500 mb-4">
-                  <svg fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-6 h-6" viewBox="0 0 24 24">
-                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"></path>
-                  </svg>
-                </div>
-                <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Melanchole</h2>
-                <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
-              </div>
-            </div>
-            <div className="xl:w-1/3 md:w-1/2 p-4">
-              <div className="border border-gray-200 p-6 rounded-lg">
-                <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-500 mb-4">
-                  <svg fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-6 h-6" viewBox="0 0 24 24">
-                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-                  </svg>
-                </div>
-                <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Bunker</h2>
-                <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
-              </div>
-            </div>
-            <div className="xl:w-1/3 md:w-1/2 p-4">
-              <div className="border border-gray-200 p-6 rounded-lg">
-                <div className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-blue-100 text-blue-500 mb-4">
-                  <svg fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-6 h-6" viewBox="0 0 24 24">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  </svg>
-                </div>
-                <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Ramona Falls</h2>
-                <p className="leading-relaxed text-base">Fingerstache flexitarian street art 8-bit waist co, subway tile poke farm.</p>
+                <h2 className="text-lg text-gray-900 font-medium title-font mb-2">Exciting Offers</h2>
+                <p className="leading-relaxed text-base">We provide amazing offers &amp; discounts.</p>
               </div>
             </div>
           </div>
+
         </div>
       </section>
+
+     
     </>
   );
 }
