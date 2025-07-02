@@ -3,6 +3,31 @@ import bcrypt from "bcryptjs";
 
 const SALT_WORK_FACTOR = 10;
 
+// 🏠 Address schema (with default flag)
+const AddressSchema = new mongoose.Schema(
+  {
+    name: String,
+    address: String,
+    phone: String,
+    pin: String,
+    city: String,
+    stateName: String,
+    isDefault: { type: Boolean, default: false }, // ✅ Default address flag
+  },
+  { _id: false }
+);
+
+// 🧠 Session/device info schema
+const SessionSchema = new mongoose.Schema(
+  {
+    userAgent: String,         // e.g., "Mozilla/5.0 (Windows NT 10.0)"
+    ipAddress: String,         // from req.headers or express middleware
+    loginTime: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+// 👤 User schema
 const UserSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -16,18 +41,21 @@ const UserSchema = new mongoose.Schema(
     password: { type: String, required: true },
     otp: { type: String },
     otpExpires: { type: Date },
-
-    // ✅ Role field added for authorization
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
     },
+
+    image: { type: String, default: "" },
+    addresses: [AddressSchema],
+    sessions: [SessionSchema], // ✅ Login session tracking
+    isActive: { type: Boolean, default: true }, // ✅ Soft delete flag
   },
   { timestamps: true }
 );
 
-// ✅ Only hash password if it’s new or modified
+// 🔐 Hash password before save (only if changed)
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   try {
@@ -40,7 +68,7 @@ UserSchema.pre("save", async function (next) {
   }
 });
 
-// ✅ Method to compare entered password with hashed one
+// 🔐 Compare password
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };

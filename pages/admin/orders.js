@@ -1,9 +1,14 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import Link from "next/link";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Dialog } from '@headlessui/react';
+import { Dialog } from "@headlessui/react";
+import { generateInvoicePDF } from "@/utils/generateInvoicePDF"; // ✅ New import
+import autoTable from "jspdf-autotable";
+
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -46,7 +51,11 @@ const AdminOrders = () => {
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) throw new Error("Status update failed");
-      setOrders((prev) => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === orderId ? { ...o, status: newStatus } : o
+        )
+      );
       toast.success("Status updated");
     } catch (err) {
       console.error(err);
@@ -54,9 +63,13 @@ const AdminOrders = () => {
     }
   };
 
-  const downloadInvoice = (orderId) => {
-    // Assumes backend route /api/admin/orders/[id]/invoice returns PDF
-    window.open(`/api/admin/orders/${orderId}/invoice`, '_blank');
+  const downloadInvoice = (order) => {
+    try {
+      generateInvoicePDF(order);
+    } catch (error) {
+      console.error("Invoice generation failed:", error);
+      toast.error("Invoice download failed");
+    }
   };
 
   return (
@@ -81,22 +94,33 @@ const AdminOrders = () => {
               </thead>
               <tbody>
                 {orders.map((o) => (
-                  <tr key={o._id} className="border-b hover:bg-blue-50 transition-all">
-                    <td className="px-4 py-2 font-mono">{o._id.slice(-6).toUpperCase()}</td>
+                  <tr
+                    key={o._id}
+                    className="border-b hover:bg-blue-50 transition-all"
+                  >
+                    <td className="px-4 py-2 font-mono">
+                      {o._id.slice(-6).toUpperCase()}
+                    </td>
                     <td className="px-4 py-2 break-all">{o.email}</td>
                     <td className="px-4 py-2">₹{o.totalAmount}</td>
                     <td className="px-4 py-2">
                       <select
                         className="border px-2 py-1 rounded"
                         value={o.status}
-                        onChange={(e) => handleStatusChange(o._id, e.target.value)}
+                        onChange={(e) =>
+                          handleStatusChange(o._id, e.target.value)
+                        }
                       >
                         <option value="Processing">Processing</option>
-                        <option value="Out for Delivery">Out for Delivery</option>
+                        <option value="Out for Delivery">
+                          Out for Delivery
+                        </option>
                         <option value="Delivered">Delivered</option>
                       </select>
                     </td>
-                    <td className="px-4 py-2">{new Date(o.createdAt).toLocaleString()}</td>
+                    <td className="px-4 py-2">
+                      {new Date(o.createdAt).toLocaleString()}
+                    </td>
                     <td className="px-4 py-2 text-right space-x-2">
                       <button
                         onClick={() => openModal(o)}
@@ -105,7 +129,7 @@ const AdminOrders = () => {
                         View Items
                       </button>
                       <button
-                        onClick={() => downloadInvoice(o._id)}
+                        onClick={() => downloadInvoice(o)} // ✅ Pass full order object
                         className="text-green-600 hover:underline"
                       >
                         Download Invoice

@@ -1,4 +1,3 @@
-// pages/api/login.js
 import connectDb from "@/middleware/mongoose";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
@@ -29,6 +28,11 @@ const handler = async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    if (user.isActive === false) {
+      console.log("⛔ Inactive (soft-deleted) user tried to log in");
+      return res.status(403).json({ error: "Account disabled. Contact support." });
+    }
+
     console.log("🔐 Raw password at login:", password);
     console.log("🔐 Hashed password from DB:", user.password);
 
@@ -45,6 +49,12 @@ const handler = async (req, res) => {
       return res.status(500).json({ error: "JWT secret missing" });
     }
 
+    // Track login session
+    const ipAddress = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"] || "unknown";
+    user.sessions.push({ ipAddress, userAgent, loginTime: new Date() });
+    await user.save();
+
     // Sign the JWT
     const token = jwt.sign(
       { id: user._id, email: user.email, role: user.role || "user" },
@@ -52,21 +62,20 @@ const handler = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // Optionally set as cookie as well
+    // Set cookie
     res.setHeader(
       "Set-Cookie",
       serialize("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 60 * 60 * 24,
+        maxAge: 60 * 60 * 24, // 1 day
         path: "/",
       })
     );
 
     console.log("✅ Login successful, token generated");
 
-    // Return the token in the response body
     return res.status(200).json({ success: true, token });
   } catch (err) {
     console.error("🔥 Login error:", err);

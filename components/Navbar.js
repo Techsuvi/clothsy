@@ -21,11 +21,6 @@ const Navbar = ({ cart, addToCart, removeFromCart, clearCart, subTotal, isCartOp
   const ref = useRef();
   const pathname = usePathname();
   const router = useRouter();
-
-  // ✅ Hide on admin pages
-  const isAdminPage = pathname.startsWith("/admin");
-  if (isAdminPage) return null;
-
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -35,6 +30,9 @@ const Navbar = ({ cart, addToCart, removeFromCart, clearCart, subTotal, isCartOp
     setMobileMenuOpen(false);
     setDropdownOpen(false);
   }, [pathname]);
+
+  // Hide Navbar on admin pages
+  const isAdminPage = pathname.startsWith("/admin");
 
   useEffect(() => {
     if (ref.current) {
@@ -55,6 +53,8 @@ const Navbar = ({ cart, addToCart, removeFromCart, clearCart, subTotal, isCartOp
     setIsLoggedIn(!!token);
     window.addEventListener("storage", () => setIsLoggedIn(!!localStorage.getItem("token")));
   }, []);
+
+  if (isAdminPage) return null;
 
   const toggleCart = () => setIsCartOpen((prev) => !prev);
   const notifyDarkMode = () => toast.info("Dark mode coming soon", { position: "top-center" });
@@ -99,8 +99,10 @@ const Navbar = ({ cart, addToCart, removeFromCart, clearCart, subTotal, isCartOp
           {/* Desktop nav */}
           <div className="hidden md:flex items-center space-x-4">
             <nav className="flex space-x-6 font-bold text-md">
-              {["Home", "Tshirts", "Hoodies", "Mugs", "Mousepads", "Caps"].map((item) => (
-                <Link key={item} href={`/${item.toLowerCase()}`} className="hover:text-blue-400">{item}</Link>
+              {['Home', 'Tshirts', 'Hoodies', 'Mugs', 'Mousepads', 'Caps'].map((item) => (
+                <Link key={item} href={`/${item.toLowerCase()}`} className="hover:text-blue-400">
+                  {item}
+                </Link>
               ))}
             </nav>
             <AiOutlineSearch className="text-xl text-gray-600" />
@@ -155,8 +157,13 @@ const Navbar = ({ cart, addToCart, removeFromCart, clearCart, subTotal, isCartOp
                 <AiOutlineClose className="text-2xl text-blue-500" onClick={() => setMobileMenuOpen(false)} />
               </div>
               <nav className="flex flex-col items-center px-6 py-4 gap-4 font-semibold text-lg text-gray-700">
-                {["Home", "Tshirts", "Hoodies", "Mugs", "Mousepads", "Caps"].map((item) => (
-                  <Link key={item} href={`/${item.toLowerCase()}`} onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500">
+                {['Home', 'Tshirts', 'Hoodies', 'Mugs', 'Mousepads', 'Caps'].map((item) => (
+                  <Link
+                    key={item}
+                    href={`/${item.toLowerCase()}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="hover:text-blue-500"
+                  >
                     {item}
                   </Link>
                 ))}
@@ -168,11 +175,33 @@ const Navbar = ({ cart, addToCart, removeFromCart, clearCart, subTotal, isCartOp
 
       {/* Mobile bottom nav */}
       {!shouldHideCart && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-t md:hidden flex justify-around items-center py-2">
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg md:hidden flex justify-around items-center py-2 z-50">
           <Link href="/"><AiOutlineHome className="text-2xl text-blue-500" /></Link>
           <AiOutlineSearch className="text-2xl text-gray-600" />
           <BsMoon onClick={notifyDarkMode} className="text-2xl text-gray-600 cursor-pointer" />
-          <MdAccountCircle className="text-2xl text-blue-500 cursor-pointer" onClick={() => setDropdownOpen((o) => !o)} />
+          <div className="relative">
+            <MdAccountCircle
+              className="text-2xl text-blue-500 cursor-pointer"
+              onClick={() => setDropdownOpen((o) => !o)}
+            />
+            {dropdownOpen && (
+              <div className="absolute bottom-12 right-4 bg-white shadow-lg rounded border overflow-hidden z-50">
+                {isLoggedIn ? (
+                  <>
+                    <Link href="/User/account"><div className="px-4 py-2 hover:bg-gray-100">My Account</div></Link>
+                    <Link href="/User/orders"><div className="px-4 py-2 hover:bg-gray-100">Orders</div></Link>
+                    <Link href="/User/contact"><div className="px-4 py-2 hover:bg-gray-100">Support</div></Link>
+                    <div onClick={handleLogout} className="px-4 py-2 text-red-500 hover:bg-gray-100 cursor-pointer">Logout</div>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login"><div className="px-4 py-2 hover:bg-gray-100">Login</div></Link>
+                    <Link href="/signup"><div className="px-4 py-2 hover:bg-gray-100">Signup</div></Link>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
           <div className="relative cursor-pointer" onClick={toggleCart}>
             <AiOutlineShoppingCart className="text-2xl text-blue-500" />
             {cartItemCount > 0 && (
